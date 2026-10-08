@@ -6,7 +6,7 @@ from expense_page import render_expense_page
 def main():
     st.set_page_config(page_title="Budget Buddy", page_icon="💰", layout="wide")
     st.title("💰 Budget Buddy")
-    st.caption("Know where your money goes")
+    st.caption("Streamlit is fun :)")
 
     # Multi-page sidebar navigation
     page = st.sidebar.radio("Navigation", ["Dashboard", "Budget Planner", "Expense Tracker"])
