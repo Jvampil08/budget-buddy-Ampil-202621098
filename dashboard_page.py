@@ -1,8 +1,9 @@
 import streamlit as st
 import matplotlib.pyplot as plt
+import pandas as pd
 
 def get_available_months():
-#Returns a list of available months for selection
+    #Returns a list of available months for selection
     return ["January 2027", "February 2027", "March 2027", "April 2027"]
 
 def render_month_selector():
@@ -60,7 +61,7 @@ def get_planned_budget_for_month(target_month):
     return monthly_income, total_planned, planned_allocations
 
 def render_financial_summary_cards(monthly_income, total_planned, total_actual, money_remaining):
-    #Renders summary metrics cards in pesos
+    #Renders top-level summary metrics cards in Philippine Pesos
     col1, col2, col3, col4 = st.columns(4)
     col1.metric("Total Income", f"₱{monthly_income:,.2f}")
     col2.metric("Planned Expenses", f"₱{total_planned:,.2f}")
@@ -88,7 +89,7 @@ def render_budget_pie_chart(planned_allocations):
     st.pyplot(fig)
 
 def render_planned_vs_actual_chart(categories, planned_vals, actual_vals):
-    # Renders a Matplotlib bar chart comparing planned vs actual spending by category
+    #Renders a Matplotlib bar chart comparing planned vs actual spending by category
     st.subheader("Planned vs. Actual Spending")
     
     if not categories:
@@ -111,25 +112,48 @@ def render_planned_vs_actual_chart(categories, planned_vals, actual_vals):
     plt.tight_layout()
     st.pyplot(fig)
 
-def render_dashboard_page():
-    # Main controller function for the Dashboard page (Part 2)
-    st.header("Financial Dashboard")
-    st.write("Overview of your monthly financial health and visual analytics.")
+def render_budget_breakdown_table(categories, planned_allocations, actual_by_category):
+    #Renders a detailed breakdown table comparing planned, actual, and remaining amounts per category
+    st.markdown("---")
+    st.subheader("Category Budget Breakdown")
     
-    # 1. Select Month
+    breakdown_data = []
+    for cat in categories:
+        planned = planned_allocations.get(cat, 0.0)
+        actual = actual_by_category.get(cat, 0.0)
+        remaining = planned - actual
+        status = "✅ On Track" if remaining >= 0 else "⚠️ Over Budget"
+        
+        breakdown_data.append({
+            "Category": cat,
+            "Planned (₱)": f"₱{planned:,.2f}",
+            "Actual (₱)": f"₱{actual:,.2f}",
+            "Remaining / Over (₱)": f"₱{remaining:,.2f}",
+            "Status": status
+        })
+        
+    df_breakdown = pd.DataFrame(breakdown_data)
+    st.dataframe(df_breakdown, use_container_width=True)
+
+def render_dashboard_page():
+    #Main controller function for the fully completed Dashboard page
+    st.header("Financial Dashboard")
+    st.write("Overview of your monthly financial health, visual analytics, and category breakdowns.")
+    
+    #1. Select Month
     selected_month = render_month_selector()
     st.markdown("---")
     
-    # 2. Gather Data for Selected Month
+    #2. Gather Data for Selected Month
     monthly_income, total_planned, planned_allocations = get_planned_budget_for_month(selected_month)
     total_actual, actual_by_category = calculate_actual_expenses_for_month(selected_month)
     money_remaining = monthly_income - total_actual
     
-    # 3. Render Summary Metric Cards
+    #3. Render Summary Metric Cards
     render_financial_summary_cards(monthly_income, total_planned, total_actual, money_remaining)
     st.markdown("---")
     
-    # 4. Render Visualizations (Matplotlib Charts side by side)
+    #4. Render Visualizations (Matplotlib Charts side by side)
     col_chart1, col_chart2 = st.columns(2)
     with col_chart1:
         render_budget_pie_chart(planned_allocations)
@@ -140,5 +164,6 @@ def render_dashboard_page():
         actual_vals = [actual_by_category.get(c, 0.0) for c in all_categories]
         render_planned_vs_actual_chart(all_categories, planned_vals, actual_vals)
         
-    st.markdown("---")
-    st.info("The category budget breakdown table will be added in next commit")
+    #5. Render Detailed Breakdown Table
+    all_categories = sorted(list(set(list(planned_allocations.keys()) + list(actual_by_category.keys()))))
+    render_budget_breakdown_table(all_categories, planned_allocations, actual_by_category)
