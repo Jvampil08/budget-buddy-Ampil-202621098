@@ -13,7 +13,6 @@ def load_initial_expenses_from_csv():
             with open(csv_filename, mode="r", encoding="utf-8") as file:
                 reader = csv.DictReader(file)
                 for row in reader:
-                    # Safely convert amount to float
                     try:
                         amount_val = float(row.get("amount", 0.0))
                     except ValueError:
@@ -31,6 +30,23 @@ def load_initial_expenses_from_csv():
             st.error(f"Error loading CSV data: {e}")
             
     return expenses
+
+def save_expense_to_csv(new_expense):
+    #Appends a single new expense record permanently to expense_data.csv
+    csv_filename = "expense_data.csv"
+    file_exists = os.path.exists(csv_filename)
+    
+    try:
+        with open(csv_filename, mode="a", newline="", encoding="utf-8") as file:
+            fieldnames = ["date", "month", "category", "description", "amount"]
+            writer = csv.DictWriter(file, fieldnames=fieldnames)
+            
+            if not file_exists:
+                writer.writeheader()
+                
+            writer.writerow(new_expense)
+    except Exception as e:
+        st.error(f"Error saving to CSV: {e}")
 
 def initialize_expense_session_state():
     #Initializes the expenses list in session state, loading from CSV on startup
@@ -62,11 +78,16 @@ def create_expense_dict(exp_date, category, description, amount):
     }
 
 def process_expense_submission(exp_date, exp_category, exp_amount, exp_description):
-    #Validates and appends a new expense to session state
+    #Validates, saves to CSV, and appends a new expense to session state
     if validate_expense_input(exp_amount, exp_description):
         new_expense = create_expense_dict(exp_date, exp_category, exp_description, exp_amount)
+        
+        #Save permanently to CSV file
+        save_expense_to_csv(new_expense)
+        
+        #Update session state
         st.session_state.expenses.append(new_expense)
-        st.success(f"Successfully recorded ${exp_amount:,.2f} for {exp_category}!")
+        st.success(f"Successfully recorded ₱{exp_amount:,.2f} for {exp_category} and saved to file!")
         st.rerun()
 
 def render_expense_form():
@@ -80,7 +101,6 @@ def render_expense_form():
             exp_date = st.date_input("Expense Date", value=date.today())
             exp_category = st.selectbox("Category", categories)
         with col2:
-            # FIXED: min_value set to 0.0 to prevent StreamlitValueBelowMinError with value 0.0
             exp_amount = st.number_input("Amount (₱)", min_value=0.0, step=10.0, value=0.0)
             exp_description = st.text_input("Description / Notes")
 
@@ -102,15 +122,16 @@ def render_expense_history():
         st.info("No expenses recorded yet. Use the form above to log your first transaction.")
     else:
         st.write(f"Total recorded items: {len(st.session_state.expenses)}")
-        st.dataframe(st.session_state.expenses, use_container_width=True)
+        df_expenses = st.session_state.expenses
+        st.dataframe(df_expenses, use_container_width=True)
 
-        if st.button("Clear All Expenses"):
+        if st.button("Clear All Expenses (Session)"):
             clear_all_expenses()
 
 def render_expense_page():
     #Main controller function for the Expense Tracker page
     st.header("Expense Tracker")
-    st.write("Record and manage your day-to-day spending.")
+    st.write("Record, persist, and manage your day-to-day spending.")
     
     initialize_expense_session_state()
     render_expense_form()
