@@ -1,0 +1,38 @@
+# 💰 Budget Buddy — Student Personal Finance Web Application
+
+Budget Buddy is a modular, lightweight personal finance web application built for students to track monthly income, log daily expenses, visualize spending habits, and monitor budget health.
+
+---
+
+## 🚀 Key Features
+
+* **Financial Dashboard:** Real-time summary metric cards (Income, Planned, Actual, Remaining), Matplotlib visual analytics (Budget Distribution Pie Chart & Planned vs. Actual Bar Chart), and a detailed Category Breakdown Table with over-budget warning logic.
+* **Budget Planner:** Month-by-month income setup and category allocation management using Philippine Pesos (**₱**).
+* **Expense Tracker:** Form-based expense logging with input validation, error handling, and permanent CSV data persistence.
+* **Modular Functional Architecture:** Built entirely with clean, single-purpose Python functions (no classes or objects), making the codebase easy to read, test, and explain.
+
+---
+
+## 🛠️ Tech Stack
+
+* **Language:** Python 3.x
+* **UI Framework:** Streamlit
+* **Visualizations:** Matplotlib & Pandas
+* **Data Storage:** CSV Files (`budget_data.csv`, `expense_data.csv`)
+* **Version Control:** Git & GitHub (Incremental Commit Strategy)
+
+---
+
+## 📁 Project Structure
+
+```text
+budget-buddy-Ampil-202621098/
+│
+├── main.py              # Application entry point and router
+├── dashboard_page.py    # Financial dashboard & Matplotlib charts
+├── budget_page.py       # Budget planning and category management
+├── expense_page.py      # Expense logging and CSV data handling
+├── budget_data.csv      # Sample monthly budget data (Jan/Feb 2027)
+├── expense_data.csv     # Sample expense transaction logs
+├── .gitignore           # Git ignore file for virtual environment
+└── SP1/                 # Local Python virtual environment
